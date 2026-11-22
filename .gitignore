@@ -1,0 +1,17 @@
+# Compilados y publicados (se generan con dotnet publish, no van al repo)
+bin/
+obj/
+publish/
+publish-ligero/
+*.exe
+*.dll
+*.pdb
+
+# Archivos de usuario de Visual Studio / VS Code
+*.user
+*.suo
+.vs/
+.vscode/
+
+# Respaldo local de la app (se genera en cada PC)
+# %AppData%\GameBoost\backup.json, settings.json — no van al repo
