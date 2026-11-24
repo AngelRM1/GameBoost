@@ -263,3 +263,112 @@ respaldo antes de aplicar. Nada borra documentos, fotos ni juegos.
   con sus valores por defecto correctos (Xbox e impresora desmarcados).
 - La aplicación real en Windows (registro, `sc`, DISM, efectos) sigue
   pendiente de probar en tu PC.
+
+## Novedades v1.5 (2026-11-23) — menú vertical, Temperaturas y diseño minimalista
+- **Menú vertical a la izquierda:** las 9 secciones ahora se eligen desde
+  una barra lateral (Medidor, Servidores, Modo Juego, Optimización, Teclas,
+  Mi PC, Optimizar, Temperaturas y Donaciones). La ventana es más ancha
+  (1200 px) para que el contenido no pierda espacio.
+- **Temperaturas (nueva pestaña):** temperaturas, voltajes, potencia,
+  ventiladores y carga de CPU, GPU, placa, RAM y discos, en vivo cada 2 s,
+  leídos con LibreHardwareMonitor. Si tu placa no expone un sensor, no
+  aparece: no es un fallo del programa.
+- **Alerta del cable de alimentación de la GPU:** vigila la potencia de la
+  GPU contra su TDP, el punto caliente y el carril de 12 V. Aviso si la GPU
+  consume más del 90% de su TDP, el punto caliente pasa de 100 °C o el 12 V
+  sale de 11,4–12,6 V; crítico si pasa del 110% del TDP, 108 °C de punto
+  caliente o el 12 V sale de 11,0–13,0 V. También avisa si la CPU pasa de
+  90 °C o el VRM de 85 °C. Las alertas solo se registran cuando cambian.
+  Honesto: el software NO puede medir la corriente por cada pin del
+  conector 12VHPWR; la alerta usa potencia, temperatura y voltaje, que son
+  los indicadores que sí se pueden leer. Revisa el conector bien asentado,
+  sin adaptadores en cadena y sin el cable doblado junto al conector.
+- **Diseño minimalista:** fondo casi negro, tarjetas planas con borde
+  sutil, un solo acento verde, menú sin iconos y cabecera más limpia.
+- System.Management subió de 8.0.0 a 9.0.0 (lo exige
+  LibreHardwareMonitorLib 0.9.4).
+
+## Verificación v1.5
+- Compilado 0 errores / 0 advertencias, PE32+ GUI x64, requireAdministrator.
+- Lógica de alertas validada en prueba con sensores simulados: RTX 5080
+  normal (300 W, 82 °C hotspot, 12,05 V) = sin alertas; pesada (380 W,
+  105% del TDP, hotspot 102 °C) = aviso; crítica (420 W, 116%, hotspot
+  110 °C, 12 V en 11,2 V) = crítico; 12 V en 12,6 V = dentro de norma;
+  11,2 V = aviso; 10,9 V = crítico; TDP por modelo (RTX 5070 Ti = 300 W,
+  no 250 W) y GPU desconocida con umbrales absolutos (500 W aviso,
+  600 W crítico). Durante la prueba se encontraron y corrigieron dos
+  fallos: el punto caliente contaba también como temperatura del núcleo
+  (falso crítico) y el límite de 12,6 V se marcaba como aviso en vez de
+  dentro de norma.
+- La lectura real de sensores en Windows sigue pendiente de probar en tu
+  PC (depende de la placa y la gráfica).
+
+## Corrección v1.5.1 (2026-11-23) — menú lateral y falsa alerta de 255 °C
+- **Menú lateral corregido:** en v1.5 las pestañas salían en varias
+  columnas estrechas y el texto se cortaba ("D...", "M...") con fondo
+  blanco. Causa: con las pestañas a la izquierda, WinForms transpone el
+  tamaño (el ancho en pantalla es ItemSize.Height y el alto es
+  ItemSize.Width), así que (190, 46) dibujaba pestañas de 46 px de ancho
+  por 190 de alto. Ahora es (46, 190): una sola columna de 190 x 46 con
+  el texto completo, y las pestañas no seleccionadas se pintan con el
+  fondo oscuro en vez del blanco nativo.
+- **Falsa alerta de GPU a 255 °C:** algunos sensores ausentes reportan
+  255 °C como valor centinela y GameBoost lo marcaba como alerta crítica.
+  Ahora se ignoran las temperaturas imposibles (más de 125 °C o menos de
+  -40 °C): una GPU real a 102 °C sigue dando alerta crítica, pero un
+  255 °C fantasma ya no aparece.
+
+## Corrección v1.5.2 (2026-11-23) — sin fondos blancos, nombres claros, textos amigables
+- **Sin fondos blancos:** el TabControl nativo dejaba blanca la tira
+  vacia bajo el menu y un filo a la derecha. El menu ahora es un Panel
+  propio con 9 botones oscuros (opcion activa con fondo claro y barra
+  verde a la izquierda): todo el programa usa sus colores, sin blancos
+  del control de Windows. La barra de titulo azul es de Windows, no de
+  GameBoost.
+- **Nombres que ya no se confunden:** "Optimización" (TCP/IP y DNS) ahora
+  se llama **Red**, y "Optimizar" (limpieza, arranque, servicios y
+  efectos) ahora se llama **Optimizar PC**.
+- **Textos mas descriptivos y amigables:** titulos que explican que hace
+  cada seccion ("Red: ajustes de TCP/IP y DNS para que tus paquetes
+  lleguen antes", "Optimizar PC: limpia, arranca mas rapido y quita lo
+  que estorba. Todo se puede deshacer"), botones que dicen lo que hacen
+  ("Elegir mi juego abierto", "Buscar el .exe del juego", "Ver cuanto se
+  puede liberar", "Guardar cambios de inicio", "Leer sensores ahora",
+  "Deshacer todo lo de esta seccion") y las descripciones largas ya no
+  se cortan: los textos que ocupan dos lineas tienen su alto reservado.
+
+## Diagnóstico v1.5.3 (2026-11-24) — el exe no arrancaba en la PC del usuario
+- El exe publicado estaba íntegro (PE válido, todos los ensamblados
+  dentro del bundle, 164.927.768 bytes) y el código de arranque ya
+  estaba protegido, así que la causa estaba fuera del programa
+  (SmartScreen/Defender, descarga incompleta o UAC).
+- Esta versión añade un registro de arranque: al abrir GameBoost se
+  escribe GameBoost-inicio.txt en %TEMP% (y junto al exe), con cada
+  paso del arranque. Si algo falla, sale una ventana con el error y la
+  ruta del registro, en vez de cerrarse en silencio.
+- Si el exe no abre: 1) clic derecho en el exe → Propiedades → si
+  aparece "Desbloquear", márcalo y Aceptar; 2) clic derecho →
+  "Ejecutar como administrador"; 3) revisa Seguridad de Windows →
+  Historial de protección, por si Defender lo puso en cuarentena;
+  4) comprueba que el archivo pese 158 MB (164.927.768 bytes): si pesa
+  menos, la descarga quedó incompleta y hay que bajarlo de nuevo.
+
+## Corrección v1.5.4 (2026-11-24) — el exe no arrancaba (error TabPage)
+- Causa real, gracias al diagnóstico de la v1.5.3: al quitar el
+  TabControl en la v1.5.2, las páginas siguieron siendo TabPage, y
+  WinForms no permite meter un TabPage dentro de un Panel normal
+  ("Sólo se pueden agregar TabPages a TabControls"). Por eso el exe
+  se cerraba al arrancar con ArgumentException.
+- Arreglo: las 9 páginas ahora son Paneles normales. El menú lateral,
+  los nombres (Red / Optimizar PC) y los textos de la v1.5.2 quedan
+  igual, y el registro de arranque de la v1.5.3 sigue activo.
+
+## v1.5.5 (2026-11-24) — barras de desplazamiento oscuras
+- Las barras de WinForms las dibuja Windows con el tema claro y no hay
+  una propiedad para cambiarles el color. Se usan dos interruptores del
+  propio Windows: DWMWA_USE_IMMERSIVE_DARK_MODE en la ventana principal
+  (tambien pone oscura la barra de titulo) y SetWindowTheme
+  "DarkMode_Explorer" en cada control con scroll (paginas, listas de
+  inicio/servicios, rejilla de sensores y cuadro de registro). Si el
+  Windows no lo soporta, todo sigue igual que antes. El resultado solo
+  se puede comprobar en un Windows real.
