@@ -40,7 +40,7 @@ namespace GameBoost
         private void BuildTabMiPc()
         {
             var p = tabMiPc;
-            p.Controls.Add(Lbl("Mi PC: ¿que tan potente es tu equipo para juegos modernos?", 16, 12, 920, true));
+            p.Controls.Add(Lbl("Mi PC: ¿que tan potente es tu equipo para los juegos de hoy?", 16, 12, 920, true));
             p.Controls.Add(Hint("GameBoost lee tu procesador, RAM, grafica y disco, y te dice donde esta el cuello de botella y en que graficos puedes jugar los juegos realistas actuales. Es una estimacion, no un benchmark.", 16, 34, 920));
 
             var btnAnalyze = Btn("🔍  Analizar mi PC", 16, 60, 240, 44, Accent);
@@ -89,7 +89,7 @@ namespace GameBoost
 
             // Veredicto general
             var cardV = Card(16, 116, 940, 110);
-            lblOverall = Lbl("Pulsa Analizar mi PC para ver tu puntuacion.", 12, 10, 900, true);
+            lblOverall = Lbl("Pulsa Analizar mi PC y te digo que tan potente es y que mejorar primero.", 12, 10, 900, true);
             trackOverall = new Panel { Location = new Point(12, 38), Size = new Size(700, 22), BackColor = Theme.CardBorder };
             fillOverall = new Panel { Location = new Point(0, 0), Size = new Size(0, 22), BackColor = Accent };
             trackOverall.Controls.Add(fillOverall);
@@ -105,7 +105,7 @@ namespace GameBoost
 
             // Componentes con barra
             var cardC = Card(16, 282, 580, 210);
-            cardC.Controls.Add(Lbl("Tu hardware:", 12, 10, 540, true));
+            cardC.Controls.Add(Lbl("Esto es lo que tiene tu PC:", 12, 10, 540, true));
             lblCpu = Lbl("CPU: —", 12, 38, 380); cardC.Controls.Add(lblCpu);
             fillCpu = ScoreBar(cardC, 400, 38, 160, 20);
             lblRam = Lbl("RAM: —", 12, 68, 380); cardC.Controls.Add(lblRam);
@@ -118,7 +118,7 @@ namespace GameBoost
             p.Controls.Add(cardC);
 
             var cardB = Card(612, 282, 344, 210);
-            cardB.Controls.Add(Lbl("Como leer la puntuacion:", 12, 10, 320, true));
+            cardB.Controls.Add(Lbl("¿Que significa la puntuacion?", 12, 10, 320, true));
             var help = new Label
             {
                 Text = "85-100  Potente: Ultra/Alto\n70-84    Bueno: Alto a 1080p\n55-69    Medio: Medio a 1080p\n40-54    Justo: Bajo a 1080p\n0-39      Basico: mejorar primero\n\nLa grafica pesa 40%, el procesador 30%, la RAM 20% y el disco 10%.",
@@ -129,7 +129,7 @@ namespace GameBoost
             p.Controls.Add(cardB);
 
             // Cuellos de botella
-            p.Controls.Add(Lbl("Puntos criticos / cuellos de botella:", 16, 504, 920, true));
+            p.Controls.Add(Lbl("Que te esta frenando (cuellos de botella):", 16, 504, 920, true));
             txtBottlenecks = new TextBox
             {
                 Location = new Point(16, 528), Size = new Size(940, 130),

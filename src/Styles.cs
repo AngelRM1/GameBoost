@@ -6,55 +6,27 @@ using System.Windows.Forms;
 namespace GameBoost
 {
     /// <summary>
-    /// Tema profesional v1.2: paneles con esquinas redondeadas y borde sutil,
-    /// pestañas dibujadas a medida y botones con hover. Todo en un solo lugar
-    /// para que el diseno sea coherente en todas las pestanas.
+    /// Tema minimalista v1.5: fondo casi negro, tarjetas planas con borde
+    /// sutil, un solo color de acento y menu vertical a la izquierda.
+    /// Todo en un solo lugar para que el diseno sea coherente.
     /// </summary>
     public static class Theme
     {
-        public static readonly Color Bg = Color.FromArgb(15, 23, 42);          // #0F172A
-        public static readonly Color PanelBg = Color.FromArgb(30, 41, 59);     // #1E293B
-        public static readonly Color CardBg = Color.FromArgb(30, 41, 59);
-        public static readonly Color CardBorder = Color.FromArgb(51, 65, 85);  // #334155
+        public static readonly Color Bg = Color.FromArgb(14, 17, 22);          // #0E1116
+        public static readonly Color PanelBg = Color.FromArgb(21, 26, 33);     // #151A21
+        public static readonly Color CardBg = Color.FromArgb(23, 28, 36);      // #171C24
+        public static readonly Color CardBorder = Color.FromArgb(35, 42, 53);  // #232A35
         public static readonly Color Accent = Color.FromArgb(34, 197, 94);
         public static readonly Color AccentBlue = Color.FromArgb(59, 130, 246);
         public static readonly Color Warn = Color.FromArgb(245, 158, 11);
         public static readonly Color Danger = Color.FromArgb(239, 68, 68);
-        public static readonly Color TextLight = Color.FromArgb(226, 232, 240);
-        public static readonly Color TextMuted = Color.FromArgb(148, 163, 184);
-        public static readonly Color InfoBg = Color.FromArgb(30, 58, 95);
-        public static readonly Color InfoBorder = Color.FromArgb(59, 130, 246);
+        public static readonly Color TextLight = Color.FromArgb(232, 236, 241);
+        public static readonly Color TextMuted = Color.FromArgb(138, 148, 166);
+        public static readonly Color InfoBg = Color.FromArgb(22, 32, 44);
+        public static readonly Color InfoBorder = Color.FromArgb(44, 74, 107);
 
-        public static void StyleTabs(TabControl tabs)
-        {
-            tabs.DrawMode = TabDrawMode.OwnerDrawFixed;
-            tabs.ItemSize = new Size(128, 38);
-            tabs.SizeMode = TabSizeMode.Fixed;
-            tabs.DrawItem += (sender, e) =>
-            {
-                var tc = (TabControl)sender!;
-                var page = tc.TabPages[e.Index];
-                bool selected = e.Index == tc.SelectedIndex;
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                var rect = e.Bounds;
-                rect.Inflate(-2, -2);
-                // Fondo de la pestana
-                using var bgBrush = new SolidBrush(selected ? Color.FromArgb(34, 197, 94) : Color.FromArgb(30, 41, 59));
-                using var path = RoundedRect(rect, 8);
-                g.FillPath(bgBrush, path);
-                if (selected)
-                {
-                    using var pen = new Pen(Color.FromArgb(74, 222, 128), 1.5f);
-                    g.DrawPath(pen, path);
-                }
-                // Texto centrado
-                var textColor = selected ? Color.White : Color.FromArgb(203, 213, 225);
-                var font = new Font("Segoe UI", 9.5f, selected ? FontStyle.Bold : FontStyle.Regular);
-                TextRenderer.DrawText(g, page.Text, font, rect, textColor,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-            };
-        }
+        // (Antes habia un StyleTabs para el TabControl nativo; el menu ahora
+        // es un Panel propio con botones, asi que ya no hace falta.)
 
         public static GraphicsPath RoundedRect(Rectangle rect, int radius)
         {
@@ -72,7 +44,7 @@ namespace GameBoost
     /// <summary>Panel con esquinas redondeadas y borde, para las tarjetas.</summary>
     public class RoundedPanel : Panel
     {
-        public int CornerRadius { get; set; } = 12;
+        public int CornerRadius { get; set; } = 10;
         public Color BorderColor { get; set; } = Theme.CardBorder;
         public int BorderWidth { get; set; } = 1;
 

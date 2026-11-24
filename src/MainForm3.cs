@@ -21,7 +21,7 @@ namespace GameBoost
 
             // PayPal
             var cardPayPal = Card(16, 142, 460, 210);
-            cardPayPal.Controls.Add(Lbl("💙  PayPal", 14, 12, 400, true));
+            cardPayPal.Controls.Add(Lbl("PayPal", 14, 12, 400, true));
             cardPayPal.Controls.Add(Lbl("Donación directa con PayPal, con tu cuenta o con tarjeta.", 14, 40, 430, false, TextMuted));
             var linkPayPal = new LinkLabel { Text = AppLinks.PayPal, Location = new Point(14, 72), Size = new Size(430, 22), LinkColor = Color.FromArgb(96, 165, 250) };
             linkPayPal.LinkClicked += (_, _) => AppLinks.OpenUrl(AppLinks.PayPal, Log);
@@ -37,7 +37,7 @@ namespace GameBoost
 
             // Buy Me a Coffee
             var cardCoffee = Card(492, 142, 464, 210);
-            cardCoffee.Controls.Add(Lbl("☕  Buy Me a Coffee", 14, 12, 400, true));
+            cardCoffee.Controls.Add(Lbl("Buy Me a Coffee", 14, 12, 400, true));
             cardCoffee.Controls.Add(Lbl("Invítame un café: una donación pequeña y rápida.", 14, 40, 430, false, TextMuted));
             var linkCoffee = new LinkLabel { Text = AppLinks.Coffee, Location = new Point(14, 72), Size = new Size(430, 22), LinkColor = Color.FromArgb(96, 165, 250) };
             linkCoffee.LinkClicked += (_, _) => AppLinks.OpenUrl(AppLinks.Coffee, Log);

@@ -49,17 +49,18 @@ namespace GameBoost
 
         public MainForm()
         {
-            Text = "GameBoost v1.4  -  Optimizacion de red para juegos online  |  Nous Logic";
-            Width = 1040; Height = 860;
-            MinimumSize = new Size(980, 760);
+            Text = "GameBoost v1.5.5  -  Optimizacion de red para juegos online  |  Nous Logic";
+            Width = 1200; Height = 860;
+            MinimumSize = new Size(1080, 760);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Bg; ForeColor = TextLight;
             Font = new Font("Segoe UI", 9.5f);
             TryLoadIcon();
             tips = new ToolTip { AutoPopDelay = 8000, InitialDelay = 400, ReshowDelay = 200, ShowAlways = true };
-            FormClosing += (_, _) => KeyBlocker.Dispose();
+            FormClosing += (_, _) => { KeyBlocker.Dispose(); try { hwSensors.Dispose(); } catch { } };
 
             BuildShell();
+            Program.LogStartup("MainForm: menu y paginas creados");
             BuildTabMedidor();
             BuildTabServidores();
             BuildTabModoJuego();
@@ -67,14 +68,21 @@ namespace GameBoost
             BuildTabBloqueo();
             BuildTabMiPc();
             BuildTabOptimizar();
+            BuildTabTemperaturas();
             BuildTabDonaciones();
+            Program.LogStartup("MainForm: todas las secciones creadas");
             KeyBlocker.EmergencyCloseRequested += OnEmergencyClose;
             RefreshSystemInfo();
+            Program.LogStartup("MainForm: info del sistema leida");
 
             pingTimer = new System.Windows.Forms.Timer { Interval = 1000 };
             pingTimer.Tick += async (_, _) => await DoOnePingAsync();
 
-            Log("GameBoost v1.4 iniciado. Creado por Nous Logic - nouslogic.xyz");
+            // Barras oscuras: se aplica al cargar, cuando todos los controles
+            // ya tienen su ventana de Windows creada.
+            Load += (_, _) => ApplyDarkScrollbars();
+
+            Log("GameBoost v1.5.5 iniciado. Creado por Nous Logic - nouslogic.xyz");
             Log("Aviso honesto: esto NO aumenta tu velocidad contratada ni acerca los servidores. Mejora lo que depende de tu PC: fondo, prioridad, TCP/DNS y eleccion de servidor.");
             Log("Consejo: pasa el mouse por encima de cada boton o campo para ver que hace, en palabras simples.");
             if (!SystemInfoHelper.IsAdmin())
@@ -115,8 +123,15 @@ namespace GameBoost
         }
 
         // ---------- Shell ----------
-        private TabControl tabs = null!;
-        private TabPage tabMedidor = null!, tabServidores = null!, tabJuego = null!, tabOpt = null!, tabDonaciones = null!, tabBloqueo = null!, tabMiPc = null!, tabOptimizar = null!;
+        // Menu lateral propio (sin TabControl): el control nativo dejaba
+        // fondos blancos en la tira vacia y, con las pestanas a la izquierda,
+        // transponia el tamano. Aqui todo es Panel + Button con colores
+        // nuestros, asi que no queda ni un fondo blanco.
+        private Panel sidebarPanel = null!, contentPanel = null!, menuIndicator = null!;
+        private List<Button> menuButtons = new();
+        private Panel[] pages = null!;
+        private int selectedTabIndex = 0;
+        private Panel tabMedidor = null!, tabServidores = null!, tabJuego = null!, tabOpt = null!, tabDonaciones = null!, tabBloqueo = null!, tabMiPc = null!, tabOptimizar = null!;
         private Panel headerPanel = null!, bottomPanel = null!;
         private Label honestLabel = null!;
 
@@ -127,46 +142,76 @@ namespace GameBoost
             var logoImg = LoadLogoImage();
             if (logoImg != null) logoBox.Image = logoImg;
             var title = new Label { Text = "GameBoost", Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = Color.White, Location = new Point(84, 8), AutoSize = true };
-            var sub = new Label { Text = "Optimizacion de red para juegos online  •  Ping en vivo  •  Modo Juego  •  Bloqueo de teclas", ForeColor = TextMuted, Location = new Point(86, 48), AutoSize = true };
-            adminLabel = new Label { Text = "Comprobando permisos...", ForeColor = TextMuted, Location = new Point(640, 14), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-            var ver = new Label { Text = "v1.2  •  Nous Logic", ForeColor = TextMuted, Location = new Point(640, 38), AutoSize = true };
-            var aboutBtn = Btn("Acerca de", 850, 18, 150, 36, AccentBlue);
+            var sub = new Label { Text = "Optimizacion para juegos en Windows", ForeColor = TextMuted, Location = new Point(86, 48), AutoSize = true };
+            adminLabel = new Label { Text = "Comprobando permisos...", ForeColor = TextMuted, Location = new Point(800, 14), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
+            var ver = new Label { Text = "v1.5.5  •  Nous Logic", ForeColor = TextMuted, Location = new Point(800, 38), AutoSize = true };
+            var aboutBtn = Btn("Acerca de", 1010, 18, 150, 36, AccentBlue);
             aboutBtn.Click += (_, _) => MessageBox.Show(
-                "GameBoost v1.4\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en la pestana Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
+                "GameBoost v1.5.5\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, vigila temperaturas y voltajes (con alerta si el cable de la GPU trabaja forzado) y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en el menu Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
                 "Acerca de GameBoost", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            var accentLine = new Panel { Location = new Point(0, 79), Size = new Size(ClientSize.Width, 3), BackColor = Accent, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            var accentLine = new Panel { Location = new Point(0, 80), Size = new Size(ClientSize.Width, 2), BackColor = Accent, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             headerPanel.Controls.AddRange(new Control[] { logoBox, title, sub, adminLabel, ver, aboutBtn, accentLine });
             Controls.Add(headerPanel);
 
             honestLabel = new Label
             {
-                Location = new Point(0, 82), Size = new Size(ClientSize.Width, 30), BackColor = Color.FromArgb(30, 41, 59), ForeColor = Color.FromArgb(253, 224, 71),
-                Text = "   💡  Regla de oro: si juegas por Wi-Fi, usa cable Ethernet. Es el cambio que mas baja el ping y el jitter.",
-                TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9, FontStyle.Bold), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                Location = new Point(0, 82), Size = new Size(ClientSize.Width, 30), BackColor = PanelBg, ForeColor = TextMuted,
+                Text = "   Consejo: si juegas por Wi-Fi, usa cable Ethernet. Es el cambio que mas baja el ping y el jitter.",
+                TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             Controls.Add(honestLabel);
 
-            tabs = new TabControl { Location = new Point(0, 112), Size = new Size(ClientSize.Width, ClientSize.Height - 112 - 150), BackColor = Bg, ForeColor = TextLight, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
-            tabMedidor = new TabPage("📶  Medidor") { BackColor = Bg };
-            tabServidores = new TabPage("🌎  Servidores") { BackColor = Bg };
-            tabJuego = new TabPage("🎮  Modo Juego") { BackColor = Bg };
-            tabOpt = new TabPage("⚙️  Optimizacion") { BackColor = Bg };
-            tabBloqueo = new TabPage("🔒  Teclas") { BackColor = Bg };
-            tabMiPc = new TabPage("💻  Mi PC") { BackColor = Bg };
-            tabOptimizar = new TabPage("🧹  Optimizar") { BackColor = Bg };
-            tabDonaciones = new TabPage("💛  Donaciones") { BackColor = Bg };
-            // Scroll vertical y horizontal en todas las pestanas: si el contenido
+            // Menu lateral propio: un Panel oscuro con 9 botones y un Panel
+            // de contenido donde vive una sola pagina visible a la vez. Las
+            // Las paginas son Paneles normales: un TabPage solo puede
+            // vivir dentro de un TabControl, y meterlo en un Panel
+            // lanzaba ArgumentException al arrancar (fallo de la v1.5.2).
+            sidebarPanel = new Panel { Location = new Point(0, 112), Size = new Size(190, ClientSize.Height - 112 - 150), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left };
+            contentPanel = new Panel { Location = new Point(190, 112), Size = new Size(ClientSize.Width - 190, ClientSize.Height - 112 - 150), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            tabMedidor = new Panel { Text = "Medidor", BackColor = Bg };
+            tabServidores = new Panel { Text = "Servidores", BackColor = Bg };
+            tabJuego = new Panel { Text = "Modo Juego", BackColor = Bg };
+            tabOpt = new Panel { Text = "Red", BackColor = Bg };
+            tabBloqueo = new Panel { Text = "Teclas", BackColor = Bg };
+            tabMiPc = new Panel { Text = "Mi PC", BackColor = Bg };
+            tabOptimizar = new Panel { Text = "Optimizar PC", BackColor = Bg };
+            tabTemperaturas = new Panel { Text = "Temperaturas", BackColor = Bg };
+            tabDonaciones = new Panel { Text = "Donaciones", BackColor = Bg };
+            // Scroll vertical y horizontal en todas las paginas: si el contenido
             // no cabe (pantalla chica, escala de Windows al 125/150%), aparecen
             // las barras y se puede bajar hasta el ultimo boton.
-            foreach (var pg in new[] { tabMedidor, tabServidores, tabJuego, tabOpt, tabBloqueo, tabMiPc, tabOptimizar, tabDonaciones })
-            { pg.AutoScroll = true; pg.AutoScrollMinSize = new Size(960, 620); }
-            tabs.TabPages.AddRange(new[] { tabMedidor, tabServidores, tabJuego, tabOpt, tabBloqueo, tabMiPc, tabOptimizar, tabDonaciones });
-            Theme.StyleTabs(tabs);
-            Controls.Add(tabs);
+            pages = new[] { tabMedidor, tabServidores, tabJuego, tabOpt, tabBloqueo, tabMiPc, tabOptimizar, tabTemperaturas, tabDonaciones };
+            foreach (var pg in pages)
+            {
+                pg.AutoScroll = true; pg.AutoScrollMinSize = new Size(960, 620);
+                pg.Dock = DockStyle.Fill; pg.Visible = false;
+                contentPanel.Controls.Add(pg);
+            }
+            for (int i = 0; i < pages.Length; i++)
+            {
+                int idx = i;
+                var b = new Button
+                {
+                    Text = pages[i].Text, Location = new Point(0, i * 46), Size = new Size(190, 46),
+                    FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9.5f),
+                    BackColor = Bg, ForeColor = TextMuted, TextAlign = ContentAlignment.MiddleLeft,
+                    Padding = new Padding(16, 0, 0, 0), Cursor = Cursors.Hand
+                };
+                b.FlatAppearance.BorderSize = 0;
+                b.Click += (_, _) => SelectTab(idx);
+                menuButtons.Add(b);
+                sidebarPanel.Controls.Add(b);
+            }
+            menuIndicator = new Panel { Size = new Size(3, 46), Location = new Point(0, 0), BackColor = Accent };
+            sidebarPanel.Controls.Add(menuIndicator);
+            menuIndicator.BringToFront();
+            Controls.Add(sidebarPanel);
+            Controls.Add(contentPanel);
+            SelectTab(0);
 
             bottomPanel = new Panel { Location = new Point(0, ClientSize.Height - 150), Size = new Size(ClientSize.Width, 150), BackColor = PanelBg, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             statusLabel = new Label { Text = "Listo.", Location = new Point(10, 4), Size = new Size(ClientSize.Width - 20, 22), ForeColor = TextMuted };
-            logBox = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Location = new Point(8, 26), Size = new Size(ClientSize.Width - 16, 116), BackColor = Color.FromArgb(15, 20, 32), ForeColor = Color.FromArgb(203, 213, 225), Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            logBox = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Location = new Point(8, 26), Size = new Size(ClientSize.Width - 16, 116), BackColor = Color.FromArgb(11, 13, 17), ForeColor = Color.FromArgb(203, 213, 225), Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             bottomPanel.Controls.Add(statusLabel);
             bottomPanel.Controls.Add(logBox);
             Controls.Add(bottomPanel);
@@ -181,8 +226,41 @@ namespace GameBoost
             honestLabel.Width = ClientSize.Width;
             bottomPanel.Location = new Point(0, ClientSize.Height - 150);
             bottomPanel.Width = ClientSize.Width;
-            tabs.Size = new Size(ClientSize.Width, Math.Max(200, ClientSize.Height - 112 - 150));
+            sidebarPanel.Size = new Size(190, Math.Max(200, ClientSize.Height - 112 - 150));
+            contentPanel.Location = new Point(190, 112);
+            contentPanel.Size = new Size(Math.Max(200, ClientSize.Width - 190), Math.Max(200, ClientSize.Height - 112 - 150));
             statusLabel.Width = ClientSize.Width - 20;
+        }
+
+        /// <summary>Muestra la pagina i y marca su boton en el menu lateral.</summary>
+        private void SelectTab(int i)
+        {
+            if (pages == null || i < 0 || i >= pages.Length) return;
+            selectedTabIndex = i;
+            for (int j = 0; j < pages.Length; j++)
+            {
+                bool sel = j == i;
+                menuButtons[j].BackColor = sel ? PanelBg : Bg;
+                menuButtons[j].ForeColor = sel ? Color.White : TextMuted;
+                menuButtons[j].Font = new Font("Segoe UI", 9.5f, sel ? FontStyle.Bold : FontStyle.Regular);
+                pages[j].Visible = sel;
+            }
+            menuIndicator.Location = new Point(0, i * 46);
+            menuIndicator.BringToFront();
+            if (pages[i] == tabTemperaturas) EnsureSensorsOpen();
+        }
+
+        private bool IsPageSelected(Panel pg) => pages != null && selectedTabIndex >= 0 && selectedTabIndex < pages.Length && pages[selectedTabIndex] == pg;
+
+        /// <summary>Pone oscuras las barras de desplazamiento (v1.5.5).</summary>
+        private void ApplyDarkScrollbars()
+        {
+            DarkScrollbars.ApplyToWindow(this);
+            foreach (var pg in pages) DarkScrollbars.ApplyToControl(pg);
+            DarkScrollbars.ApplyToControl(logBox);
+            DarkScrollbars.ApplyToControl(lstStartup);
+            DarkScrollbars.ApplyToControl(lstServices);
+            DarkScrollbars.ApplyToControl(gridSensors);
         }
 
         // ---------- Helpers UI ----------
@@ -196,9 +274,12 @@ namespace GameBoost
             b.MouseLeave += (_, _) => { b.BackColor = baseColor; };
             return b;
         }
-        private Label Lbl(string text, int x, int y, int w = 400, bool bold = false, Color? c = null)
+        private Label Lbl(string text, int x, int y, int w = 400, bool bold = false, Color? c = null, int h = 22)
         {
-            return new Label { Text = text, Location = new Point(x, y), Size = new Size(w, 22), ForeColor = c ?? TextLight, Font = new Font("Segoe UI", 9.5f, bold ? FontStyle.Bold : FontStyle.Regular), AutoSize = false };
+            // Los Label de WinForms parten el texto en varias lineas cuando
+            // no cabe en el ancho: con h mayor se ven las demas lineas en
+            // vez de cortarse. Los textos largos pasan su alto aqui.
+            return new Label { Text = text, Location = new Point(x, y), Size = new Size(w, h), ForeColor = c ?? TextLight, Font = new Font("Segoe UI", 9.5f, bold ? FontStyle.Bold : FontStyle.Regular), AutoSize = false };
         }
         /// <summary>Texto pequeno en gris, para explicar un campo o boton en palabras simples.</summary>
         private Label Hint(string text, int x, int y, int w = 400)
@@ -304,7 +385,7 @@ namespace GameBoost
             p.Controls.Add(card);
 
             p.Controls.Add(Lbl("Grafica de ping (ultimos 60 s):", 16, 308, 400, true));
-            graphPanel = new Panel { Location = new Point(16, 334), Size = new Size(940, 120), BackColor = Color.FromArgb(15, 20, 32), BorderStyle = BorderStyle.FixedSingle };
+            graphPanel = new Panel { Location = new Point(16, 334), Size = new Size(940, 120), BackColor = Color.FromArgb(11, 13, 17), BorderStyle = BorderStyle.FixedSingle };
             graphPanel.Paint += GraphPanel_Paint;
             p.Controls.Add(graphPanel);
 

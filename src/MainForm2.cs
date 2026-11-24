@@ -32,7 +32,7 @@ namespace GameBoost
         {
             var p = tabServidores;
             p.Controls.Add(Lbl("Prueba que servidor te responde mas rapido, para elegir la mejor region en tu juego.", 16, 12, 920, true));
-            p.Controls.Add(Hint("Se hacen 4 pings a cada servidor y se ordena por el mejor promedio. *La IP de LoL NA puede cambiar; si no responde, Riot la movio.", 16, 34, 920));
+            p.Controls.Add(Hint("Probamos cada servidor 4 veces y te los ordenamos del mas rapido al mas lento. *La IP de LoL NA puede cambiar; si no responde, Riot la movio.", 16, 34, 920));
             p.Controls.Add(Lbl("Si un servidor de juego marca 100% perdida, casi siempre es porque bloquea el ping (ICMP), no porque este caido. Prueba con su pagina web.", 16, 36, 920, false, TextMuted));
 
             lvServers = new ListView { Location = new Point(16, 66), Size = new Size(940, 280), View = View.Details, FullRowSelect = true, GridLines = true, BackColor = CardBg, ForeColor = TextLight };
@@ -67,7 +67,7 @@ namespace GameBoost
 
             lblBest = Lbl("Mejor servidor: sin probar todavia.", 16, 416, 940, true, Accent);
             p.Controls.Add(lblBest);
-            p.Controls.Add(Lbl("Como usarlo: elige el servidor con el promedio mas bajo y 0% de perdida. En el juego, elige manualmente la region/servidor mas cercano a ese resultado, no lo dejes en automatico si te manda lejos.", 16, 446, 940, false, TextMuted));
+            p.Controls.Add(Lbl("Como usarlo: elige el servidor con el promedio mas bajo y 0% de perdida. En el juego, elige a mano la region o servidor mas cercano a ese resultado; no lo dejes en automatico si te manda lejos.", 16, 446, 940, false, TextMuted, 40));
         }
 
         private void FillServerRow(ListViewItem item, PingStats st)
@@ -123,7 +123,7 @@ namespace GameBoost
             p.Controls.Add(Hint("Cierra las apps que roban internet, pone tu PC en Alto rendimiento, pausa Windows Update y le da prioridad a tu juego. Al desactivarlo, todo vuelve a como estaba.", 16, 34, 920));
 
             var card1 = Card(16, 60, 460, 300);
-            card1.Controls.Add(Lbl("Apps a cerrar al activar:", 12, 10, 400, true));
+            card1.Controls.Add(Lbl("Al activar el Modo Juego, cerramos estas apps:", 12, 10, 400, true));
             chkCloseApps = Chk("Cerrar las apps marcadas abajo", 12, 36, 400); card1.Controls.Add(chkCloseApps);
             chkChrome = Chk("Google Chrome  (chrome.exe)", 12, 64, 400); card1.Controls.Add(chkChrome);
             chkEdge = Chk("Microsoft Edge  (msedge.exe)", 12, 90, 400); card1.Controls.Add(chkEdge);
@@ -136,18 +136,18 @@ namespace GameBoost
             p.Controls.Add(card1);
 
             var card2 = Card(492, 60, 464, 300);
-            card2.Controls.Add(Lbl("Opciones del sistema:", 12, 10, 400, true));
+            card2.Controls.Add(Lbl("Que cambia Windows al activar el Modo Juego:", 12, 10, 400, true));
             chkPower = Chk("Plan de energia: Alto rendimiento", 12, 36, 420); Tip(chkPower, "Tu PC usa toda su potencia mientras juegas, sin ahorrar bateria ni bajar la velocidad del procesador."); card2.Controls.Add(chkPower);
             chkUpdate = Chk("Pausar Windows Update mientras juegas", 12, 64, 420); Tip(chkUpdate, "Evita que Windows descargue actualizaciones en plena partida y te suba el ping. Se reanuda al desactivar el Modo Juego."); card2.Controls.Add(chkUpdate);
-            chkAutoBlock = Chk("Bloquear tecla Windows al activar Modo Juego", 12, 90, 420, false); Tip(chkAutoBlock, "Si lo marcas, al activar el Modo Juego tambien se activa el bloqueo de teclas de la pestana Teclas, con lo que tengas marcado ahi."); card2.Controls.Add(chkAutoBlock);
-            card2.Controls.Add(Lbl("Tu juego (opcional, para darle prioridad Alta):", 12, 120, 420, true));
+            chkAutoBlock = Chk("Bloquear tecla Windows al activar Modo Juego", 12, 90, 420, false); Tip(chkAutoBlock, "Si lo marcas, al activar el Modo Juego tambien se activa el bloqueo de teclas del menu Teclas, con lo que tengas marcado ahi."); card2.Controls.Add(chkAutoBlock);
+            card2.Controls.Add(Lbl("Tu juego (opcional): prioridad Alta en Windows", 12, 120, 420, true));
             txtGameExe = new TextBox { Location = new Point(12, 148), Width = 420, BackColor = Bg, ForeColor = TextLight, PlaceholderText = "ej. FortniteClient-Win64-Shipping.exe" };
-            Tip(txtGameExe, "El .exe de tu juego. No lo escribas a mano si no quieres: usa Elegir proceso o Examinar .exe.");
+            Tip(txtGameExe, "El .exe de tu juego. No lo escribas a mano si no quieres: usa Elegir mi juego abierto o Buscar el .exe del juego.");
             card2.Controls.Add(txtGameExe);
-            var btnPick = Btn("🔍  Elegir proceso...", 12, 184, 200, 34, AccentBlue);
+            var btnPick = Btn("🔍  Elegir mi juego abierto", 12, 184, 200, 34, AccentBlue);
             Tip(btnPick, "Abre el juego primero y elijelo de la lista de programas que estan corriendo. Es la forma mas facil y sin errores.");
             btnPick.Click += (_, _) => PickGameProcess();
-            var btnBrowse = Btn("📁  Examinar .exe...", 224, 184, 208, 34, AccentBlue);
+            var btnBrowse = Btn("📁  Buscar el .exe del juego", 224, 184, 208, 34, AccentBlue);
             Tip(btnBrowse, "Busca el archivo .exe del juego en tu disco, por si no esta abierto ahora mismo.");
             btnBrowse.Click += (_, _) => BrowseGameExe();
             card2.Controls.AddRange(new Control[] { btnPick, btnBrowse });
@@ -155,7 +155,7 @@ namespace GameBoost
             Tip(btnPrio, "Le dice a Windows que atienda primero a tu juego antes que a las demas apps. Si el juego tiene anti-cheat, puede que no lo permita, y te explicare por que abajo.");
             btnPrio.Click += (_, _) => { GameModeService.PrioritizeGame(txtGameExe.Text.Trim(), Log); ShowPriorityInfo(); SetStatus("Prioridad: revisa el mensaje de abajo."); };
             card2.Controls.Add(btnPrio);
-            card2.Controls.Add(Hint("Abre el juego primero y luego pulsa Elegir proceso.", 12, 268, 420));
+            card2.Controls.Add(Hint("Abre el juego primero y luego pulsa Elegir mi juego abierto.", 12, 268, 420));
             p.Controls.Add(card2);
 
             // Caja informativa sobre la prioridad / anti-cheat, siempre visible
@@ -270,17 +270,18 @@ namespace GameBoost
         private void BuildTabOptimizacion()
         {
             var p = tabOpt;
-            var cardInfo = Card(16, 14, 940, 92);
+            p.Controls.Add(Lbl("Red: ajustes de TCP/IP y DNS para que tus paquetes lleguen antes.", 16, 12, 920, true));
+            var cardInfo = Card(16, 44, 940, 92);
             lblAdapter = Lbl("Adaptador: detectando...", 12, 10, 900, true);
             lblCurrentDns = Lbl("DNS actual: detectando...", 12, 36, 900);
             var lblWifi = Lbl("Si dice Wi-Fi, el mejor consejo sigue siendo: conecta el cable Ethernet.", 12, 62, 900, false, Warn);
             cardInfo.Controls.AddRange(new Control[] { lblAdapter, lblCurrentDns, lblWifi });
             p.Controls.Add(cardInfo);
 
-            var cardTcp = Card(16, 120, 460, 260);
-            cardTcp.Controls.Add(Lbl("Optimizacion TCP/IP", 12, 10, 400, true));
-            cardTcp.Controls.Add(Lbl("Ajusta: autotuning, RSS, ECN, timestamps y desactiva Nagle (TcpNoDelay) para que los paquetes del juego salgan sin esperar. Todo es reversible.", 12, 36, 430, false, TextMuted));
-            var btnApplyTcp = Btn("Aplicar optimizacion TCP/IP", 12, 110, 260, 40, Accent);
+            var cardTcp = Card(16, 150, 460, 260);
+            cardTcp.Controls.Add(Lbl("Ajustes de red (TCP/IP)", 12, 10, 400, true));
+            cardTcp.Controls.Add(Lbl("Hacemos que los paquetes de tu juego salgan sin esperar (autotuning, RSS, ECN y sin Nagle). Si algo se siente raro, se deshace con el boton rojo de abajo.", 12, 36, 430, false, TextMuted, 54));
+            var btnApplyTcp = Btn("Aplicar ajustes de red", 12, 110, 260, 40, Accent);
             Tip(btnApplyTcp, "Ajusta Windows para que los paquetes del juego salgan sin esperar. Se puede deshacer con Restaurar.");
             btnApplyTcp.Click += (_, _) => { Log("=== Aplicando optimizacion TCP/IP ==="); NetworkOptimizer.Apply(Log); SetStatus("Optimizacion TCP/IP aplicada. Revisa el registro."); RefreshSystemInfo(); };
             var btnRestoreTcp = Btn("Restaurar valores de Windows", 12, 162, 260, 40, Danger);
@@ -290,24 +291,24 @@ namespace GameBoost
             cardTcp.Controls.Add(Lbl("Se guarda un respaldo en %AppData%\\GameBoost\\backup.json", 12, 214, 430, false, TextMuted));
             p.Controls.Add(cardTcp);
 
-            var cardDns = Card(492, 120, 464, 260);
-            cardDns.Controls.Add(Lbl("DNS rapido", 12, 10, 400, true));
-            cardDns.Controls.Add(Lbl("El DNS solo ayuda a conectar mas rapido, no baja el ping dentro del juego. Aun asi, un DNS lento si puede retrasar el inicio.", 12, 36, 430, false, TextMuted));
-            rbCloudflare = new RadioButton { Text = "Cloudflare  1.1.1.1  /  1.0.0.1  (recomendado)", Location = new Point(12, 88), Size = new Size(430, 24), ForeColor = TextLight, Checked = true };
-            rbGoogle = new RadioButton { Text = "Google  8.8.8.8  /  8.8.4.4", Location = new Point(12, 116), Size = new Size(430, 24), ForeColor = TextLight };
-            rbAuto = new RadioButton { Text = "Automatico (DHCP, el de tu ISP)", Location = new Point(12, 144), Size = new Size(430, 24), ForeColor = TextLight };
+            var cardDns = Card(492, 150, 464, 260);
+            cardDns.Controls.Add(Lbl("Cambiar el DNS (conectar mas rapido)", 12, 10, 400, true));
+            cardDns.Controls.Add(Lbl("El DNS es como la guia de telefonos de internet: uno rapido te conecta antes, pero no baja el ping dentro del juego. Aun asi, uno lento si puede retrasar el inicio.", 12, 36, 430, false, TextMuted, 54));
+            rbCloudflare = new RadioButton { Text = "Cloudflare  1.1.1.1  /  1.0.0.1  (recomendado)", Location = new Point(12, 98), Size = new Size(430, 24), ForeColor = TextLight, Checked = true };
+            rbGoogle = new RadioButton { Text = "Google  8.8.8.8  /  8.8.4.4", Location = new Point(12, 126), Size = new Size(430, 24), ForeColor = TextLight };
+            rbAuto = new RadioButton { Text = "Automatico (DHCP, el de tu ISP)", Location = new Point(12, 152), Size = new Size(430, 24), ForeColor = TextLight };
             cardDns.Controls.AddRange(new Control[] { rbCloudflare, rbGoogle, rbAuto });
-            var btnDns = Btn("Cambiar DNS", 12, 182, 200, 38, AccentBlue);
+            var btnDns = Btn("Cambiar DNS", 12, 190, 200, 38, AccentBlue);
             Tip(btnDns, "Cambia el DNS al que elegiste arriba (Cloudflare o Google). Solo ayuda a conectar mas rapido, no baja el ping dentro del juego.");
             btnDns.Click += (_, _) => ApplyDnsChoice();
-            var btnFlush = Btn("Limpiar cache DNS", 224, 182, 200, 38, AccentBlue);
+            var btnFlush = Btn("Limpiar cache DNS", 224, 190, 200, 38, AccentBlue);
             Tip(btnFlush, "Borra las direcciones guardadas para que Windows vuelva a buscarlas frescas. No borra nada de tus archivos.");
             btnFlush.Click += (_, _) => { var r = ProcessRunner.RunCmd("ipconfig /flushdns"); Log("ipconfig /flushdns: " + r.Output.Split('\n').FirstOrDefault()?.Trim()); SetStatus("Cache DNS limpiada."); };
             cardDns.Controls.AddRange(new Control[] { btnDns, btnFlush });
             p.Controls.Add(cardDns);
 
-            p.Controls.Add(Lbl("Despues de aplicar, mide de nuevo en la pestana Medidor con Marcar ANTES / DESPUES. Si no mejora nada en 2 pruebas, restaura: en tu caso el limite es tu ISP o la distancia al servidor, no tu PC.", 16, 396, 940, false, TextMuted));
-            var btnRefresh = Btn("Actualizar info del adaptador", 16, 428, 280, 36, AccentBlue);
+            p.Controls.Add(Lbl("Despues de aplicar, mide de nuevo en Medidor con Marcar ANTES / DESPUES. Si en 2 pruebas no mejora nada, restaura: en tu caso el limite es tu internet (ISP) o la distancia al servidor, no tu PC.", 16, 426, 940, false, TextMuted, 40));
+            var btnRefresh = Btn("Volver a leer el adaptador", 16, 458, 280, 36, AccentBlue);
             btnRefresh.Click += (_, _) => RefreshSystemInfo();
             p.Controls.Add(btnRefresh);
         }

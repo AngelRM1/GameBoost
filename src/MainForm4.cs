@@ -21,7 +21,7 @@ namespace GameBoost
             p.Controls.Add(Hint("Si alguna vez pulsaste la tecla Windows en plena partida y te saco al escritorio, esto es para ti. El bloqueo solo funciona mientras GameBoost este abierto.", 16, 34, 920));
 
             var card = Card(16, 60, 580, 340);
-            card.Controls.Add(Lbl("¿Que teclas quieres bloquear?", 12, 10, 540, true));
+            card.Controls.Add(Lbl("Elige que teclas bloquear mientras juegas:", 12, 10, 540, true));
             kbWin = Chk("Tecla Windows sola  —  evita que se abra el menu Inicio por accidente", 12, 38, 540); Tip(kbWin, "Bloquea la tecla Windows (la del logo, a la izquierda del teclado). Es la que mas saca del juego sin querer."); card.Controls.Add(kbWin);
             kbWinD = Chk("Win + D  —  Mostrar escritorio", 12, 66, 540); Tip(kbWinD, "Evita que se minimice todo y aparezca el escritorio en plena partida."); card.Controls.Add(kbWinD);
             kbWinE = Chk("Win + E  —  Abrir el Explorador de archivos", 12, 94, 540); Tip(kbWinE, "Evita que se abra una ventana del Explorador encima del juego."); card.Controls.Add(kbWinE);
@@ -35,7 +35,7 @@ namespace GameBoost
             p.Controls.Add(card);
 
             var card2 = Card(612, 60, 344, 340);
-            card2.Controls.Add(Lbl("Importante, leelo:", 12, 10, 320, true));
+            card2.Controls.Add(Lbl("Antes de usarlo, lee esto:", 12, 10, 320, true));
             var info = new Label
             {
                 Text = "• El bloqueo solo funciona mientras GameBoost este abierto. Al cerrar el programa, todo vuelve a la normalidad.\n\n• Win + L (bloquear sesion) y Ctrl + Alt + Supr NO se pueden bloquear: Windows los reserva por seguridad y ningun programa normal puede interceptarlos. No es un fallo de GameBoost.\n\n• Si necesitas salir rapido del juego, pulsa Desactivar bloqueo o cierra GameBoost.",
@@ -43,7 +43,7 @@ namespace GameBoost
                 ForeColor = TextMuted, Font = new Font("Segoe UI", 9f),
             };
             card2.Controls.Add(info);
-            var btnHelp = Btn("Probar bloqueo 10 s", 12, 268, 200, 36, AccentBlue);
+            var btnHelp = Btn("Probar bloqueo (10 s)", 12, 268, 200, 36, AccentBlue);
             Tip(btnHelp, "Activa el bloqueo solo 10 segundos para probarlo sin quedarte bloqueado. Prueba pulsar la tecla Windows y veras que no pasa nada.");
             btnHelp.Click += async (_, _) =>
             {
@@ -73,7 +73,7 @@ namespace GameBoost
 
             // --- Cierre de emergencia ---
             var cardE = Card(16, 512, 940, 190);
-            cardE.Controls.Add(Lbl("🚨  Cerrar juego de emergencia (por si se crashea)", 12, 10, 900, true));
+            cardE.Controls.Add(Lbl("Cerrar juego de emergencia (por si se congela)", 12, 10, 900, true));
             cardE.Controls.Add(Hint("Si el juego se congela y no responde ni con Alt+F4, pulsa tu combinacion y GameBoost cerrara el juego que elegiste en Modo Juego, sin reiniciar la PC.", 12, 34, 900));
             emCtrl = Chk("Ctrl", 12, 62, 70, true); cardE.Controls.Add(emCtrl);
             emAlt = Chk("Alt", 92, 62, 60, true); cardE.Controls.Add(emAlt);

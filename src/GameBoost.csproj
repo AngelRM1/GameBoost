@@ -9,9 +9,9 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyName>GameBoost</AssemblyName>
     <RootNamespace>GameBoost</RootNamespace>
-    <Version>1.4.0</Version>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <Version>1.5.5</Version>
+    <AssemblyVersion>1.5.5.0</AssemblyVersion>
+    <FileVersion>1.5.5.0</FileVersion>
     <Company>Nous Logic</Company>
     <Product>GameBoost - Optimizacion de red para juegos online</Product>
     <Description>Medidor de ping en vivo, test de servidores, Modo Juego y optimizacion TCP/IP y DNS. Sin promesas falsas: no aumenta tu velocidad contratada ni acerca los servidores.</Description>
@@ -25,7 +25,8 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.4" />
+    <PackageReference Include="System.Management" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="logo.png" />
