@@ -70,6 +70,7 @@ namespace GameBoost
 
             AcceptButton = btnOk;
             CancelButton = btnCancel;
+            Load += (_, _) => DarkScrollbars.ApplyToForm(this);
             LoadProcesses();
         }
 

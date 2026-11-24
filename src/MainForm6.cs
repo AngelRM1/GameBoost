@@ -21,7 +21,7 @@ namespace GameBoost
         private void BuildTabOptimizar()
         {
             var p = tabOptimizar;
-            p.AutoScrollMinSize = new Size(960, 800);
+            p.AutoScrollMinSize = new Size(960, 1500);
             p.Controls.Add(Lbl("Optimizar PC: limpia, arranca mas rapido y quita lo que estorba. Todo se puede deshacer.", 16, 12, 920, true));
             p.Controls.Add(Hint("Nada de esto borra tus documentos, fotos ni juegos, y todo se puede restaurar. Antes de aplicar un cambio, GameBoost guarda como estaba.", 16, 34, 920));
 
@@ -97,19 +97,23 @@ namespace GameBoost
             c4.Controls.Add(Hint("Si te gustan las animaciones, no marques nada. Esto es solo para que la PC responda mas rapido.", 12, 182, 420));
             p.Controls.Add(c4);
 
-            var btnRestoreAll = Btn("↩  Deshacer todo lo de esta seccion", 16, 684, 340, 44, Danger);
-            Tip(btnRestoreAll, "Devuelve inicio, servicios y efectos a como estaban antes de tocarlos.");
+            BuildPerfSection();
+
+            var btnRestoreAll = Btn("↩  Deshacer todo lo de esta seccion", 16, 1372, 340, 44, Danger);
+            Tip(btnRestoreAll, "Devuelve inicio, servicios, efectos y rendimiento a como estaban antes de tocarlos.");
             btnRestoreAll.Click += (_, _) =>
             {
                 StartupService.RestoreAll(Log);
                 foreach (var o in WindowsServices.Options()) WindowsServices.Restore(o.Name, Log);
                 VisualEffectsService.Restore(Log);
+                WindowsGameTweaks.RestoreAll(Log);
                 LoadStartupList();
-                SetStatus("Todo restaurado: inicio, servicios y efectos.");
+                RefreshPerfState();
+                SetStatus("Todo restaurado: inicio, servicios, efectos y rendimiento.");
             };
             p.Controls.Add(btnRestoreAll);
 
-            lblOptStatus = Lbl("Optimizar PC: listo. Empieza por ver cuanto se puede liberar o por volver a leer la lista de inicio.", 16, 740, 940, true, TextMuted);
+            lblOptStatus = Lbl("Optimizar PC: listo. Empieza por ver cuanto se puede liberar, la lista de inicio o Rendimiento de Windows abajo.", 16, 1428, 940, true, TextMuted);
             p.Controls.Add(lblOptStatus);
 
             LoadStartupList();

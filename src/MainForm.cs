@@ -49,7 +49,7 @@ namespace GameBoost
 
         public MainForm()
         {
-            Text = "GameBoost v1.5.5  -  Optimizacion de red para juegos online  |  Nous Logic";
+            Text = "GameBoost v1.8.0  -  Optimizacion de red para juegos online  |  Nous Logic";
             Width = 1200; Height = 860;
             MinimumSize = new Size(1080, 760);
             StartPosition = FormStartPosition.CenterScreen;
@@ -64,6 +64,7 @@ namespace GameBoost
             BuildTabMedidor();
             BuildTabServidores();
             BuildTabModoJuego();
+            BuildTabPerfiles();
             BuildTabOptimizacion();
             BuildTabBloqueo();
             BuildTabMiPc();
@@ -81,8 +82,11 @@ namespace GameBoost
             // Barras oscuras: se aplica al cargar, cuando todos los controles
             // ya tienen su ventana de Windows creada.
             Load += (_, _) => ApplyDarkScrollbars();
+            // Aviso de nueva version: se revisa solo al arrancar, en segundo
+            // plano; si no hay internet o GitHub no responde, no pasa nada.
+            Load += async (_, _) => await AutoCheckUpdateAsync();
 
-            Log("GameBoost v1.5.5 iniciado. Creado por Nous Logic - nouslogic.xyz");
+            Log("GameBoost v1.8.0 iniciado. Creado por Nous Logic - nouslogic.xyz");
             Log("Aviso honesto: esto NO aumenta tu velocidad contratada ni acerca los servidores. Mejora lo que depende de tu PC: fondo, prioridad, TCP/DNS y eleccion de servidor.");
             Log("Consejo: pasa el mouse por encima de cada boton o campo para ver que hace, en palabras simples.");
             if (!SystemInfoHelper.IsAdmin())
@@ -144,13 +148,14 @@ namespace GameBoost
             var title = new Label { Text = "GameBoost", Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = Color.White, Location = new Point(84, 8), AutoSize = true };
             var sub = new Label { Text = "Optimizacion para juegos en Windows", ForeColor = TextMuted, Location = new Point(86, 48), AutoSize = true };
             adminLabel = new Label { Text = "Comprobando permisos...", ForeColor = TextMuted, Location = new Point(800, 14), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-            var ver = new Label { Text = "v1.5.5  •  Nous Logic", ForeColor = TextMuted, Location = new Point(800, 38), AutoSize = true };
+            var ver = new Label { Text = "v1.8.0  •  Nous Logic", ForeColor = TextMuted, Location = new Point(800, 38), AutoSize = true };
             var aboutBtn = Btn("Acerca de", 1010, 18, 150, 36, AccentBlue);
             aboutBtn.Click += (_, _) => MessageBox.Show(
-                "GameBoost v1.5.5\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, vigila temperaturas y voltajes (con alerta si el cable de la GPU trabaja forzado) y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en el menu Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
+                "GameBoost v1.8.0\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, vigila temperaturas y voltajes (con alerta si el cable de la GPU trabaja forzado) y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en el menu Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
                 "Acerca de GameBoost", MessageBoxButtons.OK, MessageBoxIcon.Information);
             var accentLine = new Panel { Location = new Point(0, 80), Size = new Size(ClientSize.Width, 2), BackColor = Accent, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             headerPanel.Controls.AddRange(new Control[] { logoBox, title, sub, adminLabel, ver, aboutBtn, accentLine });
+            BuildUpdateButton();
             Controls.Add(headerPanel);
 
             honestLabel = new Label
@@ -171,6 +176,7 @@ namespace GameBoost
             tabMedidor = new Panel { Text = "Medidor", BackColor = Bg };
             tabServidores = new Panel { Text = "Servidores", BackColor = Bg };
             tabJuego = new Panel { Text = "Modo Juego", BackColor = Bg };
+            tabPerfiles = new Panel { Text = "Perfiles", BackColor = Bg };
             tabOpt = new Panel { Text = "Red", BackColor = Bg };
             tabBloqueo = new Panel { Text = "Teclas", BackColor = Bg };
             tabMiPc = new Panel { Text = "Mi PC", BackColor = Bg };
@@ -180,7 +186,7 @@ namespace GameBoost
             // Scroll vertical y horizontal en todas las paginas: si el contenido
             // no cabe (pantalla chica, escala de Windows al 125/150%), aparecen
             // las barras y se puede bajar hasta el ultimo boton.
-            pages = new[] { tabMedidor, tabServidores, tabJuego, tabOpt, tabBloqueo, tabMiPc, tabOptimizar, tabTemperaturas, tabDonaciones };
+            pages = new[] { tabMedidor, tabServidores, tabJuego, tabPerfiles, tabOpt, tabBloqueo, tabMiPc, tabOptimizar, tabTemperaturas, tabDonaciones };
             foreach (var pg in pages)
             {
                 pg.AutoScroll = true; pg.AutoScrollMinSize = new Size(960, 620);
@@ -247,20 +253,28 @@ namespace GameBoost
             }
             menuIndicator.Location = new Point(0, i * 46);
             menuIndicator.BringToFront();
+            // Volver a aplicar el tema oscuro al cambiar de seccion: los
+            // controles crean su handle al mostrarse, y si el tema se
+            // aplico antes de que existieran, su barra queda clara.
+            if (IsHandleCreated) ApplyDarkScrollbars();
             if (pages[i] == tabTemperaturas) EnsureSensorsOpen();
         }
 
         private bool IsPageSelected(Panel pg) => pages != null && selectedTabIndex >= 0 && selectedTabIndex < pages.Length && pages[selectedTabIndex] == pg;
 
+        private bool darkScrollbarsLogged = false;
+
         /// <summary>Pone oscuras las barras de desplazamiento (v1.5.5).</summary>
         private void ApplyDarkScrollbars()
         {
-            DarkScrollbars.ApplyToWindow(this);
-            foreach (var pg in pages) DarkScrollbars.ApplyToControl(pg);
-            DarkScrollbars.ApplyToControl(logBox);
-            DarkScrollbars.ApplyToControl(lstStartup);
-            DarkScrollbars.ApplyToControl(lstServices);
-            DarkScrollbars.ApplyToControl(gridSensors);
+            // Recursivo: cubre las 9 paginas, el registro, las listas,
+            // la rejilla, los combos y cualquier scroll que se añada luego.
+            DarkScrollbars.ApplyToForm(this);
+            if (!darkScrollbarsLogged && logBox != null)
+            {
+                darkScrollbarsLogged = true;
+                Log("Tema oscuro aplicado a las barras de desplazamiento.");
+            }
         }
 
         // ---------- Helpers UI ----------

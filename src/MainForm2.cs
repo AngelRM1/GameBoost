@@ -174,7 +174,7 @@ namespace GameBoost
             btnGameOff = Btn("⏸  DESACTIVAR Modo Juego", 332, 428, 300, 48, Danger);
             Tip(btnGameOff, "Devuelve todo a como estaba: plan Equilibrado, Windows Update reanudado y bloqueo de teclas apagado.");
             btnGameOff.Enabled = false;
-            btnGameOff.Click += (_, _) => SetGameMode(false);
+            btnGameOff.Click += (_, _) => SetGameMode(false, manual: true);
             p.Controls.AddRange(new Control[] { btnGameOn, btnGameOff });
 
             lblGameStatus = Lbl("Modo Juego: APAGADO", 16, 484, 940, true, TextMuted);
@@ -223,8 +223,15 @@ namespace GameBoost
                 : Color.FromArgb(219, 234, 254);
         }
 
-        private void SetGameMode(bool on)
+        private bool gameModeOn = false;
+
+        private void SetGameMode(bool on, bool manual = false)
         {
+            gameModeOn = on;
+            // Si el usuario lo apaga a mano mientras el modo automatico
+            // lo habia activado, no se vuelve a activar solo hasta que
+            // cierre y reabra el juego (lo gestiona el temporizador).
+            if (!on && manual && autoGamePid != 0) autoSuppressedPid = autoGamePid;
             if (on)
             {
                 Log("=== ACTIVANDO Modo Juego ===");
@@ -262,6 +269,40 @@ namespace GameBoost
                 Log("Modo Juego desactivado.");
             }
         }
+
+        // --- Perfiles por juego (v1.7.0): la pestana Modo Juego es el editor ---
+        /// <summary>Pone los ajustes de un perfil en la pestana Modo Juego.</summary>
+        private void ApplyProfileToTab(GameProfile p)
+        {
+            txtGameExe.Text = p.Exe;
+            chkCloseApps.Checked = p.CloseApps;
+            chkChrome.Checked = p.Chrome;
+            chkEdge.Checked = p.Edge;
+            chkFirefox.Checked = p.Firefox;
+            chkOneDrive.Checked = p.OneDrive;
+            chkSpotify.Checked = p.Spotify;
+            chkDiscord.Checked = p.Discord;
+            chkPower.Checked = p.PowerPlan;
+            chkUpdate.Checked = p.PauseUpdate;
+            chkAutoBlock.Checked = p.BlockKeys;
+        }
+
+        /// <summary>Crea un perfil con los ajustes actuales de Modo Juego.</summary>
+        private GameProfile CurrentTabProfile(string name, string exe) => new()
+        {
+            Name = name,
+            Exe = exe,
+            CloseApps = chkCloseApps.Checked,
+            Chrome = chkChrome.Checked,
+            Edge = chkEdge.Checked,
+            Firefox = chkFirefox.Checked,
+            OneDrive = chkOneDrive.Checked,
+            Spotify = chkSpotify.Checked,
+            Discord = chkDiscord.Checked,
+            PowerPlan = chkPower.Checked,
+            PauseUpdate = chkUpdate.Checked,
+            BlockKeys = chkAutoBlock.Checked,
+        };
 
         // --- Tab 4: Optimizacion y DNS ---
         private Label lblAdapter = null!, lblCurrentDns = null!;
@@ -307,10 +348,78 @@ namespace GameBoost
             cardDns.Controls.AddRange(new Control[] { btnDns, btnFlush });
             p.Controls.Add(cardDns);
 
-            p.Controls.Add(Lbl("Despues de aplicar, mide de nuevo en Medidor con Marcar ANTES / DESPUES. Si en 2 pruebas no mejora nada, restaura: en tu caso el limite es tu internet (ISP) o la distancia al servidor, no tu PC.", 16, 426, 940, false, TextMuted, 40));
-            var btnRefresh = Btn("Volver a leer el adaptador", 16, 458, 280, 36, AccentBlue);
+            p.Controls.Add(Lbl("Despues de aplicar, mide de nuevo en Medidor con Marcar ANTES / DESPUES. Si en 2 pruebas no mejora nada, restaura: en tu caso el limite es tu internet (ISP) o la distancia al servidor, no tu PC.", 16, 666, 940, false, TextMuted, 40));
+            var btnRefresh = Btn("Volver a leer el adaptador", 16, 714, 280, 36, AccentBlue);
             btnRefresh.Click += (_, _) => RefreshSystemInfo();
             p.Controls.Add(btnRefresh);
+
+            // --- Comparar DNS (v1.8.0) ---
+            var cardCompare = Card(16, 424, 940, 228);
+            cardCompare.Controls.Add(Lbl("Comparar DNS: ¿cual responde mas rapido?", 12, 10, 900, true));
+            cardCompare.Controls.Add(Lbl("Pregunta a cada DNS cuanto tarda en responder y te dice cual es el mas rapido para ti. No cambia nada hasta que pulses Aplicar el mas rapido.", 12, 36, 900, false, TextMuted, 40));
+            var btnCompare = Btn("Comparar ahora", 12, 84, 220, 38, Accent);
+            Tip(btnCompare, "Mide 3 veces cada DNS (Cloudflare, Google, Quad9, OpenDNS y el actual de tu ISP) y ordena los resultados del mas rapido al mas lento.");
+            btnCompare.Click += async (_, _) => await CompareDnsAsync(btnCompare);
+            btnApplyFast = Btn("Aplicar el mas rapido", 244, 84, 220, 38, AccentBlue);
+            Tip(btnApplyFast, "Cambia el DNS de tu adaptador al ganador de la comparacion. Se puede deshacer eligiendo Automatico (DHCP) arriba.");
+            btnApplyFast.Enabled = false;
+            btnApplyFast.Click += (_, _) => ApplyFastestDns();
+            cardCompare.Controls.AddRange(new Control[] { btnCompare, btnApplyFast });
+            lblDnsCompare = Lbl("Aun no has comparado. Pulsa Comparar ahora (tarda unos segundos).", 12, 132, 900, false, TextMuted, 84);
+            cardCompare.Controls.Add(lblDnsCompare);
+            p.Controls.Add(cardCompare);
+            tabOpt.AutoScrollMinSize = new Size(960, 766);
+        }
+
+        private Label lblDnsCompare = null!;
+        private Button btnApplyFast = null!;
+        private DnsProvider? fastestDns;
+
+        private async System.Threading.Tasks.Task CompareDnsAsync(Button btnCompare)
+        {
+            btnCompare.Enabled = false;
+            btnApplyFast.Enabled = false;
+            fastestDns = null;
+            lblDnsCompare.Text = "Comparando...";
+            lblDnsCompare.ForeColor = TextMuted;
+            Log("=== Comparando DNS ===");
+            var results = await DnsCompare.CompareAllAsync(msg => lblDnsCompare.Text = msg);
+            var lines = new List<string>();
+            for (int i = 0; i < results.Count; i++)
+            {
+                var r = results[i];
+                lines.Add((i == 0 && r.BestMs.HasValue ? "★ " : "") + $"{i + 1}. {r.Display()}" + (r.AvgMs.HasValue ? $"  (media {r.AvgMs} ms)" : "") + (i == 0 && r.BestMs.HasValue ? "  —  el mas rapido para ti" : ""));
+            }
+            lblDnsCompare.Text = string.Join("\n", lines);
+            var winner = results.FirstOrDefault(r => r.BestMs.HasValue);
+            if (winner != null)
+            {
+                fastestDns = DnsCompare.Providers.FirstOrDefault(p => p.Name == winner.Name);
+                btnApplyFast.Enabled = fastestDns != null;
+                btnApplyFast.Text = "Aplicar el mas rapido: " + winner.Name;
+                Log("DNS mas rapido: " + winner.Display());
+                SetStatus("DNS mas rapido: " + winner.Name + " (" + winner.BestMs + " ms).");
+            }
+            else
+            {
+                lblDnsCompare.Text += "\nNingun DNS respondio. Revisa tu conexion e intentalo de nuevo.";
+                Log("Comparacion DNS: ningun servidor respondio.");
+            }
+            btnCompare.Enabled = true;
+        }
+
+        private void ApplyFastestDns()
+        {
+            if (fastestDns == null) return;
+            var adapter = SystemInfoHelper.GetActiveAdapter();
+            if (adapter == null) { MessageBox.Show("No encontre un adaptador activo (Ethernet o Wi-Fi).", "GameBoost", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            Log($"=== Aplicando DNS mas rapido ({fastestDns.Name}) en '{adapter.Name}' ===");
+            string result;
+            if (fastestDns.IsSystem) result = DnsHelper.RestoreDhcp(adapter.Name, Log);
+            else result = DnsHelper.SetDns(adapter.Name, fastestDns.Primary, fastestDns.Secondary, Log);
+            Log("Resultado DNS: " + result);
+            SetStatus("DNS actualizado a " + fastestDns.Name + ": " + result);
+            RefreshSystemInfo();
         }
 
         private void ApplyDnsChoice()

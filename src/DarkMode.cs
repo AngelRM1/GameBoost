@@ -43,10 +43,41 @@ namespace GameBoost
         {
             try
             {
-                if (control.IsHandleCreated)
-                    SetWindowTheme(control.Handle, "DarkMode_Explorer", null);
+                // Forzar la creacion del handle: los controles de las
+                // paginas ocultas aun no tienen handle en Load, y sin
+                // handle SetWindowTheme no hace nada (ese fue el fallo
+                // de la v1.5.5/v1.6.0: las secciones ocultas quedaban
+                // con la barra clara hasta que se abrían).
+                var h = control.Handle;
+                SetWindowTheme(h, "DarkMode_Explorer", null);
             }
             catch { }
+        }
+
+        /// <summary>
+        /// Recorre TODO el arbol de controles de un formulario y pone
+        /// oscuras las barras de cada control que puede tener scroll
+        /// (paneles, cuadros de texto, listas, rejillas, combos, vistas).
+        /// Asi no se queda fuera ninguno: ni los combos de Medidor y
+        /// Teclas, ni el cuadro de cuellos de botella, ni la lista del
+        /// dialogo Elegir proceso.
+        /// </summary>
+        public static void ApplyToTree(Control root)
+        {
+            foreach (Control c in root.Controls)
+            {
+                if (c is Panel || c is TextBoxBase || c is ListBox ||
+                    c is DataGridView || c is ComboBox || c is ListView || c is TreeView)
+                    ApplyToControl(c);
+                if (c.HasChildren) ApplyToTree(c);
+            }
+        }
+
+        /// <summary>Ventana completa: titulo oscuro + todas sus barras.</summary>
+        public static void ApplyToForm(Form form)
+        {
+            ApplyToWindow(form);
+            ApplyToTree(form);
         }
     }
 }
