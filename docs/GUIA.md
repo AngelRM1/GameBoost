@@ -372,3 +372,81 @@ respaldo antes de aplicar. Nada borra documentos, fotos ni juegos.
   inicio/servicios, rejilla de sensores y cuadro de registro). Si el
   Windows no lo soporta, todo sigue igual que antes. El resultado solo
   se puede comprobar en un Windows real.
+
+## v1.5.6 (2026-11-24) — barras oscuras en todas partes
+- La v1.5.5 solo cubria las paginas, el registro, las listas y la
+  rejilla. Ahora el tema oscuro se aplica recorriendo TODOS los
+  controles de la ventana: tambien los desplegables de Medidor y
+  Teclas, el cuadro de cuellos de botella de Mi PC y la lista del
+  dialogo "Elegir proceso" (que ademas lleva su barra de titulo
+  oscura). Cualquier scroll que se añada luego queda cubierto.
+
+## v1.6.0 (2026-11-24) — paquete recomendado: Rendimiento de Windows
+Nueva sección al final de Optimizar PC (baja con el scroll):
+- **Modo Juego de Windows + HAGS:** Modo Juego por registro
+  (AutoGameModeEnabled) y HAGS por registro (HwSchMode 2). HAGS se
+  aplica al reiniciar y solo funciona si la gráfica y su driver lo
+  soportan; si no, Windows lo ignora.
+- **Energía y grabación:** plan Máximo rendimiento (se crea con
+  powercfg si no existe) y vuelta a Equilibrado; Game DVR desactivado
+  (AppCaptureEnabled + GameDVR_Enabled).
+- **Liberar espacio:** apagar/encender hibernación (powercfg,
+  apaga también el inicio rápido) con el peso de hiberfil.sys, y
+  limpieza de la caché de Windows Update (para el servicio, borra
+  las descargas viejas, lo vuelve a arrancar).
+- **Salud del disco:** lista de discos con tipo (SSD/HDD), tamaño y
+  estado SMART, Analizar (fragmentación con defrag /A) y Optimizar
+  (TRIM en SSD, desfragmentar en HDD, en segundo plano).
+- Todo lo reversible se guarda en %AppData%\GameBoost\perf-backup.json
+  al primer cambio y "Deshacer todo lo de esta sección" lo devuelve.
+  La caché de Update y el TRIM/defrag no se pueden deshacer, pero no
+  se pierde nada (Windows vuelve a descargar; el disco solo se ordena).
+
+## Corrección v1.6.1 (2026-11-24) — las barras oscuras no se veían
+- Causa real: los controles de las secciones ocultas aún no tienen su
+  ventana de Windows creada cuando arranca el programa, y sin esa
+  ventana el tema oscuro no se les puede aplicar. Por eso las barras
+  seguían claras al abrir una sección por primera vez.
+- Arreglo: el tema oscuro ahora se aplica dos veces: al arrancar se
+  fuerza la creación de las ventanas de todos los controles, y cada
+  vez que cambias de sección se vuelve a aplicar. Además el registro
+  escribe "Tema oscuro aplicado a las barras de desplazamiento." al
+  arrancar, para comprobar que el código corrió.
+- Si al abrir esta versión la barra de título sigue azul y el registro
+  no dice esa línea, es que se está ejecutando un exe viejo: la barra
+  de título debe decir v1.6.1 y el archivo debe pesar 158 MB.
+
+## Novedades v1.7.0 (2026-11-24) — Perfiles por juego + modo automatico
+- Nueva pestana **Perfiles** (menu izquierdo, despues de Modo Juego):
+  - Crea un perfil por juego con los ajustes que tienes en Modo Juego
+    (que apps cerrar, alto rendimiento, pausa de Update, bloqueo de
+    teclas). Se guarda en %AppData%\GameBoost\profiles.json.
+  - Botones: Nuevo perfil (te pide el juego y un nombre), Aplicar y
+    activar, Cargar (pone el perfil en Modo Juego para editarlo),
+    Guardar (actualiza el perfil con los ajustes de Modo Juego),
+    Renombrar y Eliminar.
+- **Modo automatico**: una casilla en Perfiles. Si la marcas, GameBoost
+  vigila cada 5 segundos y activa el Modo Juego solo cuando se abre un
+  juego que tiene perfil; al cerrarse el juego, lo desactiva y deja todo
+  como estaba. La casilla se recuerda entre sesiones.
+- Si lo apagas a mano mientras juegas, no se vuelve a activar solo hasta
+  que cierres y reabras el juego (para que no te pelee el control).
+- Para que el modo automatico funcione, GameBoost tiene que estar abierto
+  (puede estar minimizado). Solo vigila juegos con perfil.
+
+## Correccion + novedades v1.8.0 (2026-11-24)
+- Corregido el contenedor de Perfiles: la ultima fila de botones
+  (Cargar / Guardar / Renombrar) se salia 2 px por debajo del borde
+  del contenedor. La tarjeta ahora tiene 12 px de margen inferior.
+- **Comparar DNS** (pestana Red): nueva tarjeta que pregunta a cada
+  DNS cuanto tarda en responder (consulta UDP directa al puerto 53,
+  3 intentos por servidor) y los ordena del mas rapido al mas lento:
+  Cloudflare, Google, Quad9, OpenDNS y el DNS actual de tu ISP.
+  El boton "Aplicar el mas rapido" cambia el DNS de tu adaptador al
+  ganador. No cambia nada hasta que lo pulses.
+- **Aviso de nueva version**: al arrancar, GameBoost revisa en GitHub
+  si hay una version mas nueva (en segundo plano, sin molestar; si no
+  hay internet, no pasa nada). Si la hay, el boton "Buscar
+  actualizaciones" del encabezado cambia a "¡Nueva version: vX.Y.Z!"
+  en verde y al pulsarlo pregunta si quieres abrir la descarga.
+  El boton tambien sirve para revisar a mano en cualquier momento.
