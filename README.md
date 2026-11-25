@@ -12,8 +12,8 @@ Ve a la sección **[Releases](https://github.com/AngelRM1/GameBoost/releases)** 
 
 | Archivo | Para quién |
 | --- | --- |
-| `GameBoost-v1.8.0.zip` (64 MB) | **Recomendado.** Un solo `GameBoost.exe`, no necesita instalar .NET. Descomprime y ejecuta. |
-| `GameBoost-v1.8.0-ligero.zip` (1.5 MB) | Si ya tienes instalado el [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0). |
+| `GameBoost-v1.8.1.zip` (64 MB) | **Recomendado.** Un solo `GameBoost.exe`, no necesita instalar .NET. Descomprime y ejecuta. |
+| `GameBoost-v1.8.1-ligero.zip` (1.6 MB) | Si ya tienes instalado el [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0). |
 
 Pasos:
 
