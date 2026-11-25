@@ -450,3 +450,38 @@ Nueva sección al final de Optimizar PC (baja con el scroll):
   actualizaciones" del encabezado cambia a "¡Nueva version: vX.Y.Z!"
   en verde y al pulsarlo pregunta si quieres abrir la descarga.
   El boton tambien sirve para revisar a mano en cualquier momento.
+
+## Publicado v1.8.0 (2026-11-24)
+- Código fuente en el repo AngelRM1/GameBoost (rama main): commits
+  3ad1728 "Código fuente v1.8.0" (29 archivos en src/), 2e667b4
+  "Guía de uso v1.8.0" y 4450608 "README v1.8.0".
+- Release v1.8.0 publicada (Latest):
+  https://github.com/AngelRM1/GameBoost/releases/tag/v1.8.0
+  con GameBoost-v1.8.0.zip (63.8 MB) y GameBoost-v1.8.0-ligero.zip
+  (1.5 MB).
+- Landing actualizada a v1.8.0 en Utilidades:
+  https://utilidades.nouslogic.xyz/gameboost
+  (commit f901bba en AngelRM1/nouslogic-utilidades).
+
+## v1.8.1 (2026-11-24) — sin terminal abajo (NO publicada aún)
+- La terminal (cuadro de registro) de abajo se eliminó: las 10
+  pestañas ahora ocupan toda la ventana. Queda solo una tira fina
+  de estado (30 px) con la línea de estado ("Modo Juego activado",
+  "DNS más rápido: ...", "Test terminado").
+- El registro (Log) queda sin salida visible; lo importante ya se
+  muestra en su sitio: el aviso de administrador en el encabezado,
+  el de actualización en el botón verde, los resultados de DNS y TCP
+  en sus tarjetas. Los textos que decían "Revisa el registro" se
+  corrigieron (TCP y errores de netsh ahora dicen el motivo).
+- Zips locales: GameBoost-v1.8.1.zip (64 MB) y
+  GameBoost-v1.8.1-ligero.zip (1.6 MB) en release/, fuente en
+  GameBoost-v1.8.1-fuente.zip. Publicar en GitHub y actualizar la
+  landing a v1.8.1 queda a decisión del usuario.
+- Web (2026-11-24, commit fa6c27a en nouslogic-utilidades): botones
+  unificados con el diseño de Interactivo en todo Utilidades
+  (Home, GameBoost, NousPixel, NousAudio, pie): mismo alto (35 px
+  por la regla global), mismo padding (24 px primario / 16 px
+  secundario), mismo espacio entre icono y texto (4 px), sombra
+  cian en el primario y texto en color primario en el secundario.
+  Se agregaron a Utilidades los tokens de espaciado y de fuente
+  que faltaban para usar las mismas clases que Interactivo.
