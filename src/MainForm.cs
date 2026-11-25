@@ -49,7 +49,7 @@ namespace GameBoost
 
         public MainForm()
         {
-            Text = "GameBoost v1.8.0  -  Optimizacion de red para juegos online  |  Nous Logic";
+            Text = "GameBoost v1.8.1  -  Optimizacion de red para juegos online  |  Nous Logic";
             Width = 1200; Height = 860;
             MinimumSize = new Size(1080, 760);
             StartPosition = FormStartPosition.CenterScreen;
@@ -86,7 +86,7 @@ namespace GameBoost
             // plano; si no hay internet o GitHub no responde, no pasa nada.
             Load += async (_, _) => await AutoCheckUpdateAsync();
 
-            Log("GameBoost v1.8.0 iniciado. Creado por Nous Logic - nouslogic.xyz");
+            Log("GameBoost v1.8.1 iniciado. Creado por Nous Logic - nouslogic.xyz");
             Log("Aviso honesto: esto NO aumenta tu velocidad contratada ni acerca los servidores. Mejora lo que depende de tu PC: fondo, prioridad, TCP/DNS y eleccion de servidor.");
             Log("Consejo: pasa el mouse por encima de cada boton o campo para ver que hace, en palabras simples.");
             if (!SystemInfoHelper.IsAdmin())
@@ -148,10 +148,10 @@ namespace GameBoost
             var title = new Label { Text = "GameBoost", Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = Color.White, Location = new Point(84, 8), AutoSize = true };
             var sub = new Label { Text = "Optimizacion para juegos en Windows", ForeColor = TextMuted, Location = new Point(86, 48), AutoSize = true };
             adminLabel = new Label { Text = "Comprobando permisos...", ForeColor = TextMuted, Location = new Point(800, 14), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-            var ver = new Label { Text = "v1.8.0  •  Nous Logic", ForeColor = TextMuted, Location = new Point(800, 38), AutoSize = true };
+            var ver = new Label { Text = "v1.8.1  •  Nous Logic", ForeColor = TextMuted, Location = new Point(800, 38), AutoSize = true };
             var aboutBtn = Btn("Acerca de", 1010, 18, 150, 36, AccentBlue);
             aboutBtn.Click += (_, _) => MessageBox.Show(
-                "GameBoost v1.8.0\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, vigila temperaturas y voltajes (con alerta si el cable de la GPU trabaja forzado) y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en el menu Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
+                "GameBoost v1.8.1\nOptimizacion de red para juegos online.\n\nCreado por Nous Logic - nouslogic.xyz\n\nLo que hace: mide tu ping real, prueba servidores, cierra apps que roban red, prioriza tu juego, bloquea la tecla Windows mientras juegas, analiza tu PC y sus cuellos de botella, vigila temperaturas y voltajes (con alerta si el cable de la GPU trabaja forzado) y aplica ajustes TCP/IP y DNS reversibles.\n\nLo que NO hace: no aumenta la velocidad de tu internet, no baja el ping por arte de magia ni acerca servidores lejanos. Si un programa te promete eso, desconfia.\n\nSi te sirve, puedes apoyar el desarrollo en el menu Donaciones (PayPal o Buy Me a Coffee). Es voluntario, todo sigue gratis.",
                 "Acerca de GameBoost", MessageBoxButtons.OK, MessageBoxIcon.Information);
             var accentLine = new Panel { Location = new Point(0, 80), Size = new Size(ClientSize.Width, 2), BackColor = Accent, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             headerPanel.Controls.AddRange(new Control[] { logoBox, title, sub, adminLabel, ver, aboutBtn, accentLine });
@@ -171,8 +171,8 @@ namespace GameBoost
             // Las paginas son Paneles normales: un TabPage solo puede
             // vivir dentro de un TabControl, y meterlo en un Panel
             // lanzaba ArgumentException al arrancar (fallo de la v1.5.2).
-            sidebarPanel = new Panel { Location = new Point(0, 112), Size = new Size(190, ClientSize.Height - 112 - 150), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left };
-            contentPanel = new Panel { Location = new Point(190, 112), Size = new Size(ClientSize.Width - 190, ClientSize.Height - 112 - 150), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            sidebarPanel = new Panel { Location = new Point(0, 112), Size = new Size(190, ClientSize.Height - 112 - 30), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left };
+            contentPanel = new Panel { Location = new Point(190, 112), Size = new Size(ClientSize.Width - 190, ClientSize.Height - 112 - 30), BackColor = Bg, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             tabMedidor = new Panel { Text = "Medidor", BackColor = Bg };
             tabServidores = new Panel { Text = "Servidores", BackColor = Bg };
             tabJuego = new Panel { Text = "Modo Juego", BackColor = Bg };
@@ -215,11 +215,18 @@ namespace GameBoost
             Controls.Add(contentPanel);
             SelectTab(0);
 
-            bottomPanel = new Panel { Location = new Point(0, ClientSize.Height - 150), Size = new Size(ClientSize.Width, 150), BackColor = PanelBg, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
+            // v1.8.1: la terminal (cuadro de registro) de abajo se elimino.
+            // Queda solo una tira fina de estado (30 px) con la linea de
+            // estado: ahi se siguen viendo los avisos ("Modo Juego
+            // activado", "DNS mas rapido: ...", "Test terminado"). El
+            // registro (Log) queda sin salida visible; lo importante ya
+            // se muestra en su sitio (el aviso de administrador esta en
+            // el encabezado, el de actualizacion en el boton verde, los
+            // resultados de DNS y TCP en sus tarjetas). Las paginas ahora
+            // ocupan toda la ventana (antes dejaban 150 px para la terminal).
+            bottomPanel = new Panel { Location = new Point(0, ClientSize.Height - 30), Size = new Size(ClientSize.Width, 30), BackColor = PanelBg, Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             statusLabel = new Label { Text = "Listo.", Location = new Point(10, 4), Size = new Size(ClientSize.Width - 20, 22), ForeColor = TextMuted };
-            logBox = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Location = new Point(8, 26), Size = new Size(ClientSize.Width - 16, 116), BackColor = Color.FromArgb(11, 13, 17), ForeColor = Color.FromArgb(203, 213, 225), Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
             bottomPanel.Controls.Add(statusLabel);
-            bottomPanel.Controls.Add(logBox);
             Controls.Add(bottomPanel);
 
             Resize += (_, _) => LayoutShell();
@@ -230,11 +237,11 @@ namespace GameBoost
             if (headerPanel == null) return;
             headerPanel.Width = ClientSize.Width;
             honestLabel.Width = ClientSize.Width;
-            bottomPanel.Location = new Point(0, ClientSize.Height - 150);
+            bottomPanel.Location = new Point(0, ClientSize.Height - 30);
             bottomPanel.Width = ClientSize.Width;
-            sidebarPanel.Size = new Size(190, Math.Max(200, ClientSize.Height - 112 - 150));
+            sidebarPanel.Size = new Size(190, Math.Max(200, ClientSize.Height - 112 - 30));
             contentPanel.Location = new Point(190, 112);
-            contentPanel.Size = new Size(Math.Max(200, ClientSize.Width - 190), Math.Max(200, ClientSize.Height - 112 - 150));
+            contentPanel.Size = new Size(Math.Max(200, ClientSize.Width - 190), Math.Max(200, ClientSize.Height - 112 - 30));
             statusLabel.Width = ClientSize.Width - 20;
         }
 
@@ -262,19 +269,12 @@ namespace GameBoost
 
         private bool IsPageSelected(Panel pg) => pages != null && selectedTabIndex >= 0 && selectedTabIndex < pages.Length && pages[selectedTabIndex] == pg;
 
-        private bool darkScrollbarsLogged = false;
-
         /// <summary>Pone oscuras las barras de desplazamiento (v1.5.5).</summary>
         private void ApplyDarkScrollbars()
         {
-            // Recursivo: cubre las 9 paginas, el registro, las listas,
-            // la rejilla, los combos y cualquier scroll que se añada luego.
+            // Recursivo: cubre las paginas, las listas, la rejilla, los
+            // combos y cualquier scroll que se añada luego.
             DarkScrollbars.ApplyToForm(this);
-            if (!darkScrollbarsLogged && logBox != null)
-            {
-                darkScrollbarsLogged = true;
-                Log("Tema oscuro aplicado a las barras de desplazamiento.");
-            }
         }
 
         // ---------- Helpers UI ----------
@@ -332,8 +332,12 @@ namespace GameBoost
             MessageBox.Show(msg, "GameBoost - Cierre de emergencia", MessageBoxButtons.OK, closed > 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
         }
 
+        // v1.8.1: sin terminal, el registro no tiene salida visible.
+        // Log() no hace nada; los servicios lo siguen recibiendo como
+        // callback para no cambiar sus firmas.
         private void Log(string msg)
         {
+            if (logBox == null) return;
             if (logBox.InvokeRequired) { logBox.Invoke(new Action<string>(Log), msg); return; }
             logBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {msg}\r\n");
         }

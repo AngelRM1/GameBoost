@@ -9,9 +9,9 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyName>GameBoost</AssemblyName>
     <RootNamespace>GameBoost</RootNamespace>
-    <Version>1.8.0</Version>
-    <AssemblyVersion>1.8.0.0</AssemblyVersion>
-    <FileVersion>1.8.0.0</FileVersion>
+    <Version>1.8.1</Version>
+    <AssemblyVersion>1.8.1.0</AssemblyVersion>
+    <FileVersion>1.8.1.0</FileVersion>
     <Company>Nous Logic</Company>
     <Product>GameBoost - Optimizacion de red para juegos online</Product>
     <Description>Medidor de ping en vivo, test de servidores, Modo Juego y optimizacion TCP/IP y DNS. Sin promesas falsas: no aumenta tu velocidad contratada ni acerca los servidores.</Description>

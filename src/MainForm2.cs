@@ -324,7 +324,7 @@ namespace GameBoost
             cardTcp.Controls.Add(Lbl("Hacemos que los paquetes de tu juego salgan sin esperar (autotuning, RSS, ECN y sin Nagle). Si algo se siente raro, se deshace con el boton rojo de abajo.", 12, 36, 430, false, TextMuted, 54));
             var btnApplyTcp = Btn("Aplicar ajustes de red", 12, 110, 260, 40, Accent);
             Tip(btnApplyTcp, "Ajusta Windows para que los paquetes del juego salgan sin esperar. Se puede deshacer con Restaurar.");
-            btnApplyTcp.Click += (_, _) => { Log("=== Aplicando optimizacion TCP/IP ==="); NetworkOptimizer.Apply(Log); SetStatus("Optimizacion TCP/IP aplicada. Revisa el registro."); RefreshSystemInfo(); };
+            btnApplyTcp.Click += (_, _) => { Log("=== Aplicando optimizacion TCP/IP ==="); NetworkOptimizer.Apply(Log); SetStatus("Optimizacion TCP/IP aplicada."); RefreshSystemInfo(); };
             var btnRestoreTcp = Btn("Restaurar valores de Windows", 12, 162, 260, 40, Danger);
             Tip(btnRestoreTcp, "Devuelve todos los ajustes TCP/IP a como venian de fabrica en Windows. Usalo si algo se siente raro.");
             btnRestoreTcp.Click += (_, _) => { Log("=== Restaurando valores de Windows ==="); NetworkOptimizer.Restore(Log); SetStatus("Valores restaurados."); RefreshSystemInfo(); };

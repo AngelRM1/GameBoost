@@ -211,7 +211,7 @@ namespace GameBoost
                 log($"DNS secundario {secondary}: salida {r2.ExitCode} - {FirstLine(r2.Output)}");
             }
             ProcessRunner.RunCmd("ipconfig /flushdns");
-            return r1.ExitCode == 0 ? "OK" : "Revisa el registro: netsh devolvio " + r1.ExitCode;
+            return r1.ExitCode == 0 ? "OK" : "No se pudo cambiar el DNS (netsh devolvio " + r1.ExitCode + "). Prueba ejecutando GameBoost como administrador.";
         }
 
         public static string RestoreDhcp(string adapterName, Action<string> log)
@@ -219,7 +219,7 @@ namespace GameBoost
             var r = ProcessRunner.RunNetsh($"interface ipv4 set dnsservers name=\"{adapterName}\" source=dhcp");
             log($"DNS a automatico (DHCP): salida {r.ExitCode} - {FirstLine(r.Output)}");
             ProcessRunner.RunCmd("ipconfig /flushdns");
-            return r.ExitCode == 0 ? "OK" : "Revisa el registro: netsh devolvio " + r.ExitCode;
+            return r.ExitCode == 0 ? "OK" : "No se pudo volver al DNS automatico (netsh devolvio " + r.ExitCode + "). Prueba ejecutando GameBoost como administrador.";
         }
 
         private static string FirstLine(string s)

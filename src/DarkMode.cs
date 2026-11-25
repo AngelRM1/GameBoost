@@ -13,7 +13,7 @@ namespace GameBoost
     ///    pone oscura la barra de titulo y las barras de desplazamiento
     ///    de la ventana (Windows 10 20H1 / Windows 11).
     ///  - SetWindowTheme(handle, "DarkMode_Explorer", null) en cada control
-    ///    con scroll (paginas, listas, rejilla, cuadro de registro):
+    ///    con scroll (paginas, listas, rejilla, cuadros de texto):
     ///    dibuja sus barras con el tema oscuro del Explorador.
     /// Si el Windows no soporta alguno, la llamada falla en silencio y
     /// todo sigue igual que antes. El resultado solo se puede comprobar
